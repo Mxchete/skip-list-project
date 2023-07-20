@@ -14,7 +14,7 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         // root.setLinks(null, null);
     }
 
-    // TODO
+    // add done for now
     public boolean add(T object) {
         if (root == null || root.payload == null) {
             root = new SkipListSetPayloadWrapper<T>(object);
@@ -24,8 +24,8 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             size++;
             return true;
         }
-        SkipListSetPayloadWrapper<T> nearestWrapper = root.search(object, height);
-        if (nearestWrapper.payload.compareTo(object) != 0) {
+        SkipListSetPayloadWrapper<T> nearestWrapperByHeight[] = srch_non_recursive(object);
+        if (nearestWrapperByHeight[0].payload.compareTo(object) != 0) {
             // add method here
             // add process for increasing height
             // when it is determined that height needs to increase, take head and increase
@@ -35,6 +35,35 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             if (Math.round(Math.log(size) / Math.log(height)) != height) {
                 raiseHeight();
             }
+            // object should be inserted on the right
+            // if (nearestWrapperByHeight.get(0).payload.compareTo(object) < 0) {
+            SkipListSetPayloadWrapper<T> wrapperToAdd = new SkipListSetPayloadWrapper<T>(object);
+            int addHeight = heightRandomizer();
+            for (int i = 0; i < addHeight; i++) {
+                if (nearestWrapperByHeight[i].payload.compareTo(object) < 0) {
+                    SkipListSetPayloadWrapper<T> right = null;
+                    if (nearestWrapperByHeight[i].links.get(i).right != null) {
+                        right = nearestWrapperByHeight[i].links.get(i).right;
+                        right.links.get(i).left = wrapperToAdd;
+                    }
+                    nearestWrapperByHeight[i].links.get(i).right = wrapperToAdd;
+                    wrapperToAdd.setLinks(nearestWrapperByHeight[i], right);
+                }
+
+                else {
+                    SkipListSetPayloadWrapper<T> left = null;
+                    if (nearestWrapperByHeight[i].links.get(i).left != null) {
+                        left = nearestWrapperByHeight[i].links.get(i).left;
+                        left.links.get(i).right = wrapperToAdd;
+                    }
+                    nearestWrapperByHeight[i].links.get(i).left = wrapperToAdd;
+                    wrapperToAdd.setLinks(left, nearestWrapperByHeight[i]);
+                }
+            }
+            // }
+            // insert to left
+            // else {
+            // }
             size++;
             return true;
         }
@@ -100,7 +129,7 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         Iterator<T> hashIterator = iterator();
         int result = 0;
         while (hashIterator.hasNext()) {
-            result = result + Objects.hash(hashIterator);
+            result = result + Objects.hash(hashIterator.next());
         }
         return result;
     }
@@ -204,6 +233,57 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         height++;
     }
 
+    private int heightRandomizer() {
+        int randomHeight = 0;
+        while (Math.round(Math.random()) == 1 && randomHeight != height - 1) {
+            randomHeight++;
+        }
+        return randomHeight;
+    }
+
+    @SuppressWarnings("unchecked")
+    private SkipListSetPayloadWrapper<T>[] srch_non_recursive(T objectToFind) {
+        SkipListSetPayloadWrapper<T> eachHeight[] = new SkipListSetPayloadWrapper[height];
+        SkipListSetPayloadWrapper<T> searcher = root;
+        int curHeight = height - 1;
+        while (curHeight >= 0) {
+            if (searcher.payload.compareTo(objectToFind) == 0) {
+                eachHeight[curHeight] = searcher;
+                curHeight--;
+            }
+
+            else if (searcher.payload.compareTo(objectToFind) < 0) {
+                if (searcher.links.get(curHeight).right != null) {
+                    searcher = searcher.links.get(curHeight).right;
+                    eachHeight[curHeight] = searcher;
+                }
+
+                else {
+                    eachHeight[curHeight] = searcher;
+                    curHeight--;
+                }
+            }
+
+            else {
+                if (curHeight == 0) {
+                    eachHeight[curHeight] = searcher;
+                }
+
+                if (searcher.links.get(curHeight).left != null) {
+                    eachHeight[curHeight] = searcher;
+                    searcher = searcher.links.get(curHeight).left;
+                    curHeight--;
+                }
+
+                else {
+                    eachHeight[curHeight] = searcher;
+                    curHeight--;
+                }
+            }
+        }
+        return eachHeight;
+    }
+
     // https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html
     @SuppressWarnings("hiding")
     private class SkipListSetIterator<T extends Comparable<T>> implements Iterator<T> {
@@ -245,16 +325,76 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             if (payload.compareTo(objectToFind) == 0)
                 return this;
 
-            else if (payload.compareTo(objectToFind) < 0)
-                return links.get(curHeight).right.search(objectToFind, curHeight);
+            else if (payload.compareTo(objectToFind) < 0) {
+                if (links.get(curHeight).right != null)
+                    return links.get(curHeight).right.search(objectToFind, curHeight);
+                else
+                    return this;
+            }
 
-            else if (payload.compareTo(objectToFind) > 0)
-                return links.get(curHeight - 1).left.search(objectToFind, curHeight - 1);
+            else if (payload.compareTo(objectToFind) > 0) {
+                if (curHeight == 0)
+                    return this;
+                if (links.get(curHeight - 1).left != null)
+                    return links.get(curHeight - 1).left.search(objectToFind, curHeight - 1);
+                else
+                    return search(objectToFind, curHeight - 1);
+            }
 
             else
                 return this;
 
         }
+
+        // search_diff is search but returns the nearest wrapper on each level
+        // private SkipListSetPayloadWrapper<T>[]
+        // search_diff(SkipListSetPayloadWrapper<T> l[],
+        // T objectToFind, int curHeight) {
+        //
+        // if (payload.compareTo(objectToFind) == 0) {
+        // while (curHeight >= 0) {
+        // l[curHeight] = this;
+        // curHeight--;
+        // }
+        // return l;
+        // }
+        //
+        // else if (payload.compareTo(objectToFind) < 0) {
+        // if (links.get(curHeight).right != null) {
+        // l[curHeight] = links.get(curHeight).right.search_diff(l, objectToFind,
+        // curHeight)[curHeight];
+        // return l;
+        // } else {
+        // l[curHeight] = this;
+        // if (curHeight != 0)
+        // l[curHeight - 1] = search_diff(l, objectToFind, curHeight - 1)[curHeight -
+        // 1];
+        // return l;
+        // }
+        // }
+        //
+        // else if (payload.compareTo(objectToFind) > 0) {
+        // if (curHeight == 0) {
+        // l[curHeight] = this;
+        // return l;
+        // }
+        // if (links.get(curHeight - 1).left != null) {
+        // l[curHeight - 1] = links.get(curHeight - 1).left.search_diff(l, objectToFind,
+        // curHeight - 1)[curHeight - 1];
+        // return l;
+        // } else {
+        // l[curHeight - 1] = search_diff(l, objectToFind, curHeight - 1)[curHeight -
+        // 1];
+        // return l;
+        // }
+        // }
+        //
+        // else {
+        // l[curHeight] = this;
+        // return l;
+        // }
+        //
+        // }
 
         private void setLinks(SkipListSetPayloadWrapper<T> left, SkipListSetPayloadWrapper<T> right) {
             links.add(new Links(left, right));
