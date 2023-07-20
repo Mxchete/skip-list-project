@@ -169,6 +169,14 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         if (removeMe.payload.compareTo((T) object) != 0)
             return false;
         // add remove method here
+        for (int i = 0; i < removeMe.links.size(); i++) {
+            if (removeMe.links.get(i).right != null) {
+                removeMe.links.get(i).right.links.get(i).left = removeMe.links.get(i).left;
+            }
+            if (removeMe.links.get(i).left != null) {
+                removeMe.links.get(i).left.links.get(i).right = removeMe.links.get(i).right;
+            }
+        }
         return true;
     }
 
