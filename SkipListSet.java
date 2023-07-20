@@ -31,7 +31,8 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             // when it is determined that height needs to increase, take head and increase
             // its height by one, then, for all nodes at the height level 1 below head, 50%
             // chance to increase height by 1
-            if (size + 1 >= Math.pow(height, 2)) {
+            // if (size + 1 >= Math.pow(height, 2)) {
+            if (Math.round(Math.log(size) / Math.log(height)) != height) {
                 raiseHeight();
             }
             size++;
@@ -96,7 +97,12 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     // TODO
     public int hashCode() {
-        return -1;
+        Iterator<T> hashIterator = iterator();
+        int result = 0;
+        while (hashIterator.hasNext()) {
+            result = result + Objects.hash(hashIterator);
+        }
+        return result;
     }
 
     public SkipListSet<T> headSet(T object) {
