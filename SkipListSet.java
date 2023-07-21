@@ -33,7 +33,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             // chance to increase height by 1
             // if (size + 1 >= Math.pow(height, 2)) {
             if (Math.round(Math.log(size) / Math.log(height)) >= height) {
-                raiseHeight();
+                // System.out.println("Here");
+                // raiseHeight();
             }
             // object should be inserted on the right
             // if (nearestWrapperByHeight.get(0).payload.compareTo(object) < 0) {
@@ -96,7 +97,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // TODO
     @SuppressWarnings("unchecked")
     public boolean contains(Object object) {
-        if (root.search((T) object, height).payload.compareTo((T) object) == 0)
+        // System.out.println(height);
+        if (root.search((T) object, height - 1).payload.compareTo((T) object) == 0)
             return true;
         return false;
     }
@@ -165,7 +167,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // TODO
     @SuppressWarnings("unchecked")
     public boolean remove(Object object) {
-        SkipListSetPayloadWrapper<T> removeMe = root.search((T) object, height);
+        SkipListSetPayloadWrapper<T> removeMe = root.search((T) object, height - 1);
         if (removeMe.payload.compareTo((T) object) != 0)
             return false;
         // add remove method here
@@ -330,6 +332,11 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
         private SkipListSetPayloadWrapper<T> search(T objectToFind, int curHeight) {
 
+            // System.out.println(curHeight);
+            // if (curHeight == height) {
+            // curHeight--;
+            // }
+
             if (payload.compareTo(objectToFind) == 0)
                 return this;
 
@@ -343,8 +350,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             else if (payload.compareTo(objectToFind) > 0) {
                 if (curHeight == 0)
                     return this;
-                if (links.get(curHeight - 1).left != null)
-                    return links.get(curHeight - 1).left.search(objectToFind, curHeight - 1);
+                if (links.get(curHeight).left != null)
+                    return links.get(curHeight).left.search(objectToFind, curHeight - 1);
                 else
                     return search(objectToFind, curHeight - 1);
             }
