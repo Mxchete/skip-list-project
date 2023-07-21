@@ -24,7 +24,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             size++;
             return true;
         }
-        SkipListSetPayloadWrapper<T> nearestWrapperByHeight[] = srch_non_recursive(object);
+        int addHeight = heightRandomizer();
+        SkipListSetPayloadWrapper<T> nearestWrapperByHeight[] = srch_non_recursive(object, addHeight);
         if (nearestWrapperByHeight[0].payload.compareTo(object) != 0) {
             // add method here
             // add process for increasing height
@@ -39,8 +40,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             // object should be inserted on the right
             // if (nearestWrapperByHeight.get(0).payload.compareTo(object) < 0) {
             SkipListSetPayloadWrapper<T> wrapperToAdd = new SkipListSetPayloadWrapper<T>(object);
-            int addHeight = heightRandomizer();
-            for (int i = 0; i < addHeight; i++) {
+            for (int i = 0; i <= addHeight; i++) {
                 if (nearestWrapperByHeight[i].payload.compareTo(object) < 0) {
                     SkipListSetPayloadWrapper<T> right = null;
                     if (nearestWrapperByHeight[i].links.get(i).right != null) {
@@ -98,7 +98,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     @SuppressWarnings("unchecked")
     public boolean contains(Object object) {
         // System.out.println(height);
-        if (root.search((T) object, height - 1).payload.compareTo((T) object) == 0)
+        if (srch_non_recursive((T) object, 0)[0].payload.compareTo((T) object) == 0)
             return true;
         return false;
     }
@@ -248,28 +248,35 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         while (Math.round(Math.random()) == 1 && randomHeight != height - 1) {
             randomHeight++;
         }
+        // System.out.println("random height: " + randomHeight);
         return randomHeight;
     }
 
     @SuppressWarnings("unchecked")
-    private SkipListSetPayloadWrapper<T>[] srch_non_recursive(T objectToFind) {
-        SkipListSetPayloadWrapper<T> eachHeight[] = new SkipListSetPayloadWrapper[height];
+    private SkipListSetPayloadWrapper<T>[] srch_non_recursive(T objectToFind, int addHeight) {
+        SkipListSetPayloadWrapper<T> eachHeight[] = new SkipListSetPayloadWrapper[addHeight + 1];
         SkipListSetPayloadWrapper<T> searcher = root;
         int curHeight = height - 1;
         while (curHeight >= 0) {
+            // System.out.println("payload: " + searcher.payload + " object: " +
+            // objectToFind);
             if (searcher.payload.compareTo(objectToFind) == 0) {
-                eachHeight[curHeight] = searcher;
+                if (curHeight <= addHeight)
+                    eachHeight[curHeight] = searcher;
                 curHeight--;
             }
 
             else if (searcher.payload.compareTo(objectToFind) < 0) {
                 if (searcher.links.get(curHeight).right != null) {
                     searcher = searcher.links.get(curHeight).right;
-                    eachHeight[curHeight] = searcher;
+                    SkipListSetPayloadWrapper<T> nextRight = searcher.links.get(curHeight).right;
+                    if (curHeight <= addHeight && (nextRight == null || nextRight.payload.compareTo(objectToFind) > 0))
+                        eachHeight[curHeight] = searcher;
                 }
 
                 else {
-                    eachHeight[curHeight] = searcher;
+                    if (curHeight <= addHeight)
+                        eachHeight[curHeight] = searcher;
                     curHeight--;
                 }
             }
@@ -280,13 +287,15 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                 }
 
                 if (searcher.links.get(curHeight).left != null) {
-                    eachHeight[curHeight] = searcher;
+                    if (curHeight <= addHeight)
+                        eachHeight[curHeight] = searcher;
                     searcher = searcher.links.get(curHeight).left;
                     curHeight--;
                 }
 
                 else {
-                    eachHeight[curHeight] = searcher;
+                    if (curHeight <= addHeight)
+                        eachHeight[curHeight] = searcher;
                     curHeight--;
                 }
             }
