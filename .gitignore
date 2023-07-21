@@ -25,6 +25,7 @@ replay_pid*
 
 # test harness
 SkipListTestHarness.java
+SkipTest.java
 
 # Generated txt output files
 *.txt

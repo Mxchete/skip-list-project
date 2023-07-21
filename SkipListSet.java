@@ -1,13 +1,13 @@
 import java.util.*;
 
 // https://docs.oracle.com/javase/8/docs/api/java/util/SortedSet.html
-class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
+public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     private static int height = -1;
     private static int size = -1;
     private SkipListSetPayloadWrapper<T> root = null;
 
-    SkipListSet() {
+    public SkipListSet() {
         root = new SkipListSetPayloadWrapper<T>(null);
         height = 5;
         size = 0;
@@ -32,7 +32,7 @@ class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             // its height by one, then, for all nodes at the height level 1 below head, 50%
             // chance to increase height by 1
             // if (size + 1 >= Math.pow(height, 2)) {
-            if (Math.round(Math.log(size) / Math.log(height)) != height) {
+            if (Math.round(Math.log(size) / Math.log(height)) >= height) {
                 raiseHeight();
             }
             // object should be inserted on the right
