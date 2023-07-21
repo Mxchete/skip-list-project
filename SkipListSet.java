@@ -271,6 +271,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                     searcher = searcher.links.get(curHeight).right;
                     SkipListSetPayloadWrapper<T> nextRight = searcher.links.get(curHeight).right;
                     if (curHeight <= addHeight && (nextRight == null || nextRight.payload.compareTo(objectToFind) > 0))
+                        // if (curHeight <= addHeight)
                         eachHeight[curHeight] = searcher;
                 }
 
