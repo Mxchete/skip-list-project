@@ -274,6 +274,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
 
         }
+        root.setLinks(null, null);
         height++;
     }
 
@@ -347,6 +348,11 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         for (int j = 0; j <= addHeight; j++) {
             itemWrapper.setLinks(null, null);
         }
+        if (size + 1 >= Math.pow(height, 2)) {
+            // if (Math.round(Math.log(size) / Math.log(height)) >= height) {
+            // System.out.println("Here");
+            raiseHeight();
+        }
         while (i >= 0) {
 
             // System.out.println("cur Height: " + i);
@@ -390,6 +396,9 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             else if (temp.links.get(i).right.payload.compareTo(obj) < 0) {
                 temp = temp.links.get(i).right;
             } else {
+                System.out.println("obj to search " + obj);
+                System.out.println("cur item " + temp.payload);
+                System.out.println("right item " + temp.links.get(i).right.payload);
                 break;
             }
         }
