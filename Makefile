@@ -28,8 +28,8 @@ clean:
 	@del *.class
 
 help:
-	@echo "term:		run project and print output to terminal"
-	@echo "file:		run project and print output to output.txt"
-	@echo "other:		run other test harness"
-	@echo "compile:	run compile only"
-	@echo "clean:		remove javac generated class files"
+	@echo term:		run project and print output to terminal
+	@echo file:		run project and print output to output.txt
+	@echo other:		run other test harness
+	@echo compile:	run compile only
+	@echo clean:		remove javac generated class files
