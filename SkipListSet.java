@@ -6,17 +6,17 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     private static int height = -1;
     private static int size = -1;
     private SkipListSetPayloadWrapper<T> root = null;
-    private int how_many_adds = 0;
+    // private int how_many_adds = 0;
 
     public SkipListSet() {
         root = new SkipListSetPayloadWrapper<T>(null);
-        height = 5;
+        height = 25;
         size = 0;
     }
 
     // add done for now
     public boolean add(T object) {
-        how_many_adds++;
+        // how_many_adds++;
         // System.out.println(how_many_adds);
         if (root == null || root.payload == null) {
             root = new SkipListSetPayloadWrapper<T>(object);
@@ -73,7 +73,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     @SuppressWarnings("unchecked")
     public boolean contains(Object object) {
         // System.out.println(height);
-        if (srch_non_recursive((T) object, 0)[0].payload.compareTo((T) object) == 0)
+        if (search((T) object, false).payload.compareTo((T) object) == 0)
             return true;
         return false;
     }
@@ -195,6 +195,13 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     // TODO
     public void reBalance() {
+        // SkipListSet<T> oldSet = this;
+        // root = null;
+        // Iterator<T> i = oldSet.iterator();
+        // while (i.hasNext()) {
+        // add(i.next());
+        // }
+        // oldSet.clear();
     }
 
     // TODO
@@ -229,58 +236,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return randomHeight;
     }
 
-    @SuppressWarnings("unchecked")
-    private SkipListSetPayloadWrapper<T>[] srch_non_recursive(T objectToFind, int addHeight) {
-        SkipListSetPayloadWrapper<T> eachHeight[] = new SkipListSetPayloadWrapper[addHeight + 1];
-        SkipListSetPayloadWrapper<T> searcher = root;
-        int curHeight = height - 1;
-        while (curHeight >= 0) {
-            // System.out.println("payload: " + searcher.payload + " object: " +
-            // objectToFind);
-            if (searcher.payload.compareTo(objectToFind) == 0) {
-                if (curHeight <= addHeight)
-                    eachHeight[curHeight] = searcher;
-                curHeight--;
-            }
-
-            else if (searcher.payload.compareTo(objectToFind) < 0) {
-                if (searcher.links.get(curHeight).right != null) {
-                    searcher = searcher.links.get(curHeight).right;
-                    SkipListSetPayloadWrapper<T> nextRight = searcher.links.get(curHeight).right;
-                    if (curHeight <= addHeight && (nextRight == null || nextRight.payload.compareTo(objectToFind) > 0))
-                        // if (curHeight <= addHeight)
-                        eachHeight[curHeight] = searcher;
-                }
-
-                else {
-                    if (curHeight <= addHeight)
-                        eachHeight[curHeight] = searcher;
-                    curHeight--;
-                }
-            }
-
-            else {
-                if (curHeight == 0) {
-                    eachHeight[curHeight] = searcher;
-                }
-
-                if (searcher.links.get(curHeight).left != null) {
-                    if (curHeight <= addHeight)
-                        eachHeight[curHeight] = searcher;
-                    searcher = searcher.links.get(curHeight).left;
-                    curHeight--;
-                }
-
-                else {
-                    if (curHeight <= addHeight)
-                        eachHeight[curHeight] = searcher;
-                    curHeight--;
-                }
-            }
-        }
-        return eachHeight;
-    }
-
     private SkipListSetPayloadWrapper<T> search(T obj, boolean add) {
         SkipListSetPayloadWrapper<T> temp = root;
         SkipListSetPayloadWrapper<T> itemWrapper = new SkipListSetPayloadWrapper<T>(obj);
@@ -294,16 +249,18 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         int i = height - 1;
 
         while (true) {
-            while (temp.links.get(i).right != null && temp.links.get(i).right.payload.compareTo(obj) <= 0) {
-                temp = temp.links.get(i).right;
+            SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
+            if (right != null && right.payload.compareTo(obj) <= 0) {
+                temp = right;
+                continue;
             }
             if (add && i <= addHeight) {
-                if (temp.links.get(i).right != null && temp.links.get(i).right.payload.compareTo(obj) == 0) {
-                    return temp.links.get(i).right;
+                if (right != null && right.payload.compareTo(obj) == 0) {
+                    return right;
                 }
-                itemWrapper.setLinksAtIdx(i, temp, temp.links.get(i).right);
-                if (temp.links.get(i).right != null) {
-                    temp.links.get(i).right.links.get(i).left = itemWrapper;
+                itemWrapper.setLinksAtIdx(i, temp, right);
+                if (right != null) {
+                    right.links.get(i).left = itemWrapper;
                 }
                 temp.links.get(i).right = itemWrapper;
             }
@@ -326,7 +283,9 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         private SkipListSetPayloadWrapper<T> currentItem = null;
 
         public boolean hasNext() {
-            return currentItem.links.get(0).right == null;
+            if (currentItem == null)
+                return false;
+            return (currentItem.links.get(0).right == null);
         }
 
         public T next() {
@@ -353,32 +312,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         SkipListSetPayloadWrapper(T payload) {
             this.payload = payload;
             this.links = new ArrayList<>();
-        }
-
-        private SkipListSetPayloadWrapper<T> search(T objectToFind, int curHeight) {
-
-            if (payload.compareTo(objectToFind) == 0)
-                return this;
-
-            else if (payload.compareTo(objectToFind) < 0) {
-                if (links.get(curHeight).right != null)
-                    return links.get(curHeight).right.search(objectToFind, curHeight);
-                else
-                    return this;
-            }
-
-            else if (payload.compareTo(objectToFind) > 0) {
-                if (curHeight == 0)
-                    return this;
-                if (links.get(curHeight).left != null)
-                    return links.get(curHeight).left.search(objectToFind, curHeight - 1);
-                else
-                    return search(objectToFind, curHeight - 1);
-            }
-
-            else
-                return this;
-
         }
 
         private void setLinks(SkipListSetPayloadWrapper<T> left, SkipListSetPayloadWrapper<T> right) {
