@@ -177,10 +177,15 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
         }
         if (removeMe.payload.compareTo(root.payload) == 0) {
-            for (int i = removeMe.links.size(); i < height; i++) {
-                removeMe.setLinks(root.links.get(i).left, root.links.get(i).right);
-            }
-            root = removeMe;
+            // for (int i = removeMe.links.size(); i < height; i++) {
+            // removeMe.setLinks(root.links.get(i).left, root.links.get(i).right);
+            // }
+            // root = removeMe;
+            // size--;
+            // return true;
+            T save = removeMe.links.get(0).right.payload;
+            remove(save);
+            removeMe.payload = save;
             size--;
             return true;
         }
@@ -196,41 +201,42 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             removeMe.setLinksAtIdx(i, null, null);
         }
         size--;
-        if (contains(object)) {
-            System.out.println(removeMe.payload);
-            System.out.println(removeMe.links.size());
-            for (int i = 0; i < removeMe.links.size(); i++) {
-                System.out.println(removeMe.links.get(i).right.payload);
-                System.out.println(removeMe.links.get(i).left.payload);
-            }
-            SkipListSetPayloadWrapper<T> temp = root;
-            int i = height - 1;
-            System.out.println("obj: " + object);
-            System.out.println("obj hash: " + object.hashCode());
-
-            while (true) {
-                SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
-                System.out.println("lvl: " + i);
-                System.out.println("nde: " + temp.payload);
-                if (right != null)
-                    System.out.println("rht: " + right.payload);
-                if (right != null && right.payload.compareTo((T) object) <= 0) {
-                    temp = right;
-                    continue;
-                }
-                if (temp.payload.compareTo((T) object) == 0) {
-                    System.out.println(temp.links.get(i).right.payload);
-                    System.out.println(temp.links.get(i).left.payload);
-                }
-                // System.out.println(temp.payload.compareTo((T) object) == 0);
-                if (i > 0) {
-                    i--;
-                } else
-                    break;
-            }
-            // remove(object);
-        }
         return true;
+    }
+
+    public int print_debug(T object) {
+        // System.out.println(removeMe.payload);
+        // System.out.println(removeMe.links.size());
+        // for (int i = 0; i < removeMe.links.size(); i++) {
+        // System.out.println(removeMe.links.get(i).right.payload);
+        // System.out.println(removeMe.links.get(i).left.payload);
+        // }
+        SkipListSetPayloadWrapper<T> temp = root;
+        int i = height - 1;
+        System.out.println("obj: " + object);
+        System.out.println("obj hash: " + object.hashCode());
+
+        while (true) {
+            SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
+            System.out.println("lvl: " + i);
+            System.out.println("nde: " + temp.payload);
+            if (right != null)
+                System.out.println("rht: " + right.payload);
+            if (right != null && right.payload.compareTo((T) object) <= 0) {
+                temp = right;
+                continue;
+            }
+            if (temp.payload.compareTo((T) object) == 0) {
+                System.out.println(temp.links.get(i).right);
+                System.out.println(temp.links.get(i).left);
+            }
+            // System.out.println(temp.payload.compareTo((T) object) == 0);
+            if (i > 0) {
+                i--;
+            } else
+                break;
+        }
+        return 0;
     }
 
     // TODO

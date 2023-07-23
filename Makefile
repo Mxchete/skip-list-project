@@ -1,6 +1,3 @@
-FILE_NUM = 1
-OUTPUT_FILE = .\outputs\output_$(FILE_NUM).txt
-
 term:
 	@javac *.java
 	@java SkipListTestHarness.java
@@ -8,12 +5,7 @@ term:
 
 file:
 	@javac *.java
-	# @while [ Test-Path -Path $(OUTPUT_FILE) -PathType Leaf] ; 
-	# do
-	# 	$(FILE_NUM) = $(FILE_NUM) + 1 
-	# done
-	# @echo "printing to file at $(OUTPUT_FILE)"
-	@java SkipListTestHarness.java > outputs/output.txt
+	@java SkipListTestHarness.java > output.txt
 	@del *.class
 
 other:
