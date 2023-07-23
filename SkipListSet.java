@@ -294,15 +294,20 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
             size++;
         }
-        int i = root.links.size() - 1;
+        // int i = temp.links.size() - 1;
 
-        while (true) {
-            SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
+        for (int i = temp.links.size() - 1; i >= 0; i--) {
+            SkipListSetPayloadWrapper<T> right = null;
+            if (temp.links.size() > i)
+                right = temp.links.get(i).right;
+            else
+                i = 0;
             if (right != null && right.payload.compareTo(obj) <= 0) {
                 temp = right;
-                if (DEBUG) {
-                    // System.out.println(temp.payload);
-                }
+                // if (DEBUG) {
+                // System.out.println(temp.payload);
+                // }
+                i++;
                 continue;
             }
             if (add && i <= addHeight) {
@@ -329,10 +334,10 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             // // temp.links.get(0).right.links.get(0).left.payload);
             // // }
             // }
-            if (i > 0) {
-                i--;
-            } else
-                break;
+            // if (i > 0) {
+            // i--;
+            // } else
+            // break;
         }
 
         if (add)
@@ -395,8 +400,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                 if (links.get(i).left != null) {
                     links.get(i).left.links.get(i).right = links.get(i).right;
                 }
-                // links.get(i).left = null;
-                // links.get(i).right = null;
+                links.get(i).left = null;
+                links.get(i).right = null;
             }
 
         }
