@@ -27,18 +27,26 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             return true;
         }
         if (root.payload.compareTo(object) >= 0) {
-            SkipListSetPayloadWrapper<T> newRoot = new SkipListSetPayloadWrapper<T>(object);
-            for (int i = 0; i < height - 1; i++) {
-                newRoot.setLinks(null, root);
-                root.links.get(i).left = newRoot;
-            }
-            newRoot.setLinks(null, null);
-            root.links.remove(root.links.size() - 1);
-            root = newRoot;
+            T oldRoot = root.payload;
+            root.payload = object;
+            add(oldRoot);
+
+            // SkipListSetPayloadWrapper<T> newRoot = new
+            // SkipListSetPayloadWrapper<T>(object);
+            // for (int i = 0; i < height - 1; i++) {
+            // newRoot.setLinks(null, root);
+            // root.links.get(i).left = newRoot;
+            // }
+            // newRoot.setLinks(null, null);
+            // root.links.remove(root.links.size() - 1);
+            // root = newRoot;
+        }
+        if (contains(object)) {
+            return false;
         }
         int oldSize = size;
         SkipListSetPayloadWrapper<T> nearestWrapper = search(object, true);
-        if (oldSize != size) {
+        if (oldSize == size) {
             return false;
         }
         if (size > Math.pow(2, height)) {
@@ -158,6 +166,16 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         // removeMe.links.get(i).right = null;
         // removeMe.links.get(i).left = null;
         // }
+        // boolean DEBUG = object.hashCode() == -2003898889;
+        boolean DEBUG = false;
+        if (DEBUG) {
+            System.out.println(removeMe.payload);
+            System.out.println(removeMe.links.size());
+            for (int i = 0; i < removeMe.links.size(); i++) {
+                System.out.println(removeMe.links.get(i).right.payload);
+                System.out.println(removeMe.links.get(i).left.payload);
+            }
+        }
         if (removeMe.payload.compareTo(root.payload) == 0) {
             for (int i = removeMe.links.size(); i < height; i++) {
                 removeMe.setLinks(root.links.get(i).left, root.links.get(i).right);
@@ -179,37 +197,38 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
         size--;
         if (contains(object)) {
-            // System.out.println(removeMe.payload);
-            // System.out.println(removeMe.links.size());
-            // for (int i = 0; i < removeMe.links.size(); i++) {
-            // System.out.println(removeMe.links.get(i).right);
-            // System.out.println(removeMe.links.get(i).left);
-            // }
-            // SkipListSetPayloadWrapper<T> temp = root;
-            // int i = height - 1;
-            // System.out.println("obj: " + object);
-            //
-            // while (true) {
-            // SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
-            // System.out.println("lvl: " + i);
-            // System.out.println("nde: " + temp.payload);
-            // if (right != null)
-            // System.out.println("rht: " + right.payload);
-            // if (right != null && right.payload.compareTo((T) object) <= 0) {
-            // temp = right;
-            // continue;
-            // }
-            // if (temp.payload.compareTo((T) object) == 0) {
-            // System.out.println(temp.links.get(i).right);
-            // System.out.println(temp.links.get(i).left);
-            // }
-            // // System.out.println(temp.payload.compareTo((T) object) == 0);
-            // if (i > 0) {
-            // i--;
-            // } else
-            // break;
-            // }
-            remove(object);
+            System.out.println(removeMe.payload);
+            System.out.println(removeMe.links.size());
+            for (int i = 0; i < removeMe.links.size(); i++) {
+                System.out.println(removeMe.links.get(i).right.payload);
+                System.out.println(removeMe.links.get(i).left.payload);
+            }
+            SkipListSetPayloadWrapper<T> temp = root;
+            int i = height - 1;
+            System.out.println("obj: " + object);
+            System.out.println("obj hash: " + object.hashCode());
+
+            while (true) {
+                SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
+                System.out.println("lvl: " + i);
+                System.out.println("nde: " + temp.payload);
+                if (right != null)
+                    System.out.println("rht: " + right.payload);
+                if (right != null && right.payload.compareTo((T) object) <= 0) {
+                    temp = right;
+                    continue;
+                }
+                if (temp.payload.compareTo((T) object) == 0) {
+                    System.out.println(temp.links.get(i).right.payload);
+                    System.out.println(temp.links.get(i).left.payload);
+                }
+                // System.out.println(temp.payload.compareTo((T) object) == 0);
+                if (i > 0) {
+                    i--;
+                } else
+                    break;
+            }
+            // remove(object);
         }
         return true;
     }
@@ -304,9 +323,26 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             size++;
         }
         int i = height - 1;
+        // boolean DEBUG = obj.hashCode() == -2003898889;
+        boolean DEBUG = false;
+        if (add && DEBUG) {
+            System.out.println("hhhhh");
+            System.out.println("hhhhh");
+            System.out.println("hhhhh");
+            System.out.println("hhhhh");
+            System.out.println("hhhhh");
+            System.out.println("addHeight: " + addHeight);
+        }
 
         while (true) {
             SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
+            if (DEBUG & add) {
+                System.out.println("lvl: " + i);
+                System.out.println("temp: " + temp.payload);
+                if (right != null) {
+                    System.out.println("r: " + right.payload);
+                }
+            }
             if (right != null && right.payload.compareTo(obj) <= 0) {
                 temp = right;
                 continue;
