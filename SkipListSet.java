@@ -28,21 +28,16 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
         if (root.payload.compareTo(object) >= 0) {
             SkipListSetPayloadWrapper<T> newRoot = new SkipListSetPayloadWrapper<T>(object);
-            // System.out.println(object);
-            // System.out.println(root.links.size());
             for (int i = 0; i < height - 1; i++) {
                 newRoot.setLinks(null, root);
                 root.links.get(i).left = newRoot;
             }
             newRoot.setLinks(null, null);
             root.links.remove(root.links.size() - 1);
-            // System.out.println(root.links.size());
             root = newRoot;
-            size++;
-            return true;
         }
         int oldSize = size;
-        SkipListSetPayloadWrapper<T> nearestWrapper = search(object, true, false);
+        SkipListSetPayloadWrapper<T> nearestWrapper = search(object, true);
         if (oldSize != size) {
             return false;
         }
@@ -80,7 +75,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     @SuppressWarnings("unchecked")
     public boolean contains(Object object) {
         // System.out.println(height);
-        if (search((T) object, false, false).payload.compareTo((T) object) == 0)
+        if (search((T) object, false).payload.compareTo((T) object) == 0)
             return true;
         return false;
     }
@@ -149,59 +144,37 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // TODO
     @SuppressWarnings("unchecked")
     public boolean remove(Object object) {
-        SkipListSetPayloadWrapper<T> removeMe = search((T) object, false, false);
+        SkipListSetPayloadWrapper<T> removeMe = search((T) object, false);
         if (removeMe.payload.compareTo((T) object) != 0)
             return false;
         // add remove method here
-        int numLinks = removeMe.links.size();
         // if (root.payload.compareTo((T) object) == 0) {
-        if (numLinks == root.links.size()) {
-            // System.out.println("ROOT");
-            // System.out.println(root.payload);
-            // System.out.println(object);
-            // System.out.println(numLinks);
-            if (size == 1) {
-                root = null;
-            } else {
-                int i = removeMe.links.get(0).right.links.size();
-                while (i < height) {
-                    // removeMe.links.get(0).right.setLinks(null, null);
-                    removeMe.links.get(0).right.setLinks(null, removeMe.links.get(i - 1).right);
-                    i++;
-                }
-                // System.out.println(i);
-                root = removeMe.links.get(0).right;
-                // root.setLinks(null, null);
+        // if (size == 1) {
+        // root = null;
+        // }
+        //
+        // else {
+        // int i = removeMe.links.get(0).right.links.size();
+        // while (i < height) {
+        // removeMe.links.get(0).right.setLinks(null, removeMe.links.get(i).right);
+        // i++;
+        // }
+        // root = removeMe.links.get(0).right;
+        // }
+        // size--;
+        // return true;
+        // }
+        for (int i = 0; i < removeMe.links.size(); i++) {
+            if (removeMe.links.get(i).right != null) {
+                removeMe.links.get(i).right.links.get(i).left = removeMe.links.get(i).left;
             }
-            return true;
+            if (removeMe.links.get(i).left != null) {
+                removeMe.links.get(i).left.links.get(i).right = removeMe.links.get(i).right;
+            }
+            removeMe.links.get(i).right = null;
+            removeMe.links.get(i).left = null;
         }
-        removeMe.removeLinks();
-        // for (int i = 0; i < numLinks; i++) {
-        // if (removeMe.links.get(i).right != null) {
-        // removeMe.links.get(i).right.links.get(i).left = removeMe.links.get(i).left;
-        // }
-        // if (removeMe.links.get(i).left != null) {
-        // removeMe.links.get(i).left.links.get(i).right = removeMe.links.get(i).right;
-        // }
-        // // removeMe.links.get(i).left = null;
-        // // removeMe.links.get(i).right = null;
-        // }
         size--;
-        // if (contains(object)) {
-        // System.out.println(search((T) object, false, true).payload.compareTo((T)
-        // object) == 0);
-        // System.out.println(object);
-        // // System.out.println(height - 1);
-        // System.out.println(removeMe.links.size());
-        // // System.out.println(numLinks);
-        // for (int i = 0; i < numLinks; i++) {
-        // // System.out.println(i + " left right: " +
-        // // removeMe.links.get(i).left.links.get(i).right.payload);
-        // // System.out.println(i + " right left: " +
-        // // removeMe.links.get(i).right.links.get(i).left.payload);
-        // }
-        // }
-        removeMe = null;
         return true;
     }
 
@@ -277,14 +250,14 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     private int heightRandomizer() {
         int randomHeight = 0;
-        while (Math.round(Math.random()) == 1 && randomHeight != height - 2) {
+        while (Math.round(Math.random()) == 1 && randomHeight != height - 1) {
             randomHeight++;
         }
         // System.out.println("random height: " + randomHeight);
         return randomHeight;
     }
 
-    private SkipListSetPayloadWrapper<T> search(T obj, boolean add, boolean DEBUG) {
+    private SkipListSetPayloadWrapper<T> search(T obj, boolean add) {
         SkipListSetPayloadWrapper<T> temp = root;
         SkipListSetPayloadWrapper<T> itemWrapper = new SkipListSetPayloadWrapper<T>(obj);
         int addHeight = heightRandomizer();
@@ -294,50 +267,28 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
             size++;
         }
-        // int i = temp.links.size() - 1;
+        int i = height - 1;
 
-        for (int i = temp.links.size() - 1; i >= 0; i--) {
-            SkipListSetPayloadWrapper<T> right = null;
-            if (temp.links.size() > i)
-                right = temp.links.get(i).right;
-            else
-                i = 0;
+        while (true) {
+            SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
             if (right != null && right.payload.compareTo(obj) <= 0) {
                 temp = right;
-                // if (DEBUG) {
-                // System.out.println(temp.payload);
-                // }
-                i++;
                 continue;
             }
             if (add && i <= addHeight) {
                 if (right != null && right.payload.compareTo(obj) == 0) {
                     return right;
                 }
-                // if (right != null && right.payload.compareTo(obj) < 0) {
                 itemWrapper.setLinksAtIdx(i, temp, right);
                 if (right != null) {
                     right.links.get(i).left = itemWrapper;
                 }
                 temp.links.get(i).right = itemWrapper;
-                // }
             }
-            // if (DEBUG) {
-            // System.out.println("Level: " + i);
-            // System.out.println("of obj: " + temp.payload);
-            // // if (i == 0) {
-            // if (temp.links.get(i).right != null)
-            // System.out.println("r: " + temp.links.get(i).right.payload);
-            // if (temp.links.get(i).left != null)
-            // System.out.println("l: " + temp.links.get(i).left.payload);
-            // // System.out.println("rl: " +
-            // // temp.links.get(0).right.links.get(0).left.payload);
-            // // }
-            // }
-            // if (i > 0) {
-            // i--;
-            // } else
-            // break;
+            if (i > 0) {
+                i--;
+            } else
+                break;
         }
 
         if (add)
@@ -390,20 +341,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
         private void setLinksAtIdx(int index, SkipListSetPayloadWrapper<T> left, SkipListSetPayloadWrapper<T> right) {
             links.set(index, new Links(left, right));
-        }
-
-        private void removeLinks() {
-            for (int i = 0; i < links.size(); i++) {
-                if (links.get(i).right != null) {
-                    links.get(i).right.links.get(i).left = links.get(i).left;
-                }
-                if (links.get(i).left != null) {
-                    links.get(i).left.links.get(i).right = links.get(i).right;
-                }
-                links.get(i).left = null;
-                links.get(i).right = null;
-            }
-
         }
 
         private class Links {
