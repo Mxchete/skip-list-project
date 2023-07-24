@@ -167,15 +167,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         // removeMe.links.get(i).left = null;
         // }
         // boolean DEBUG = object.hashCode() == -2003898889;
-        boolean DEBUG = false;
-        if (DEBUG) {
-            System.out.println(removeMe.payload);
-            System.out.println(removeMe.links.size());
-            for (int i = 0; i < removeMe.links.size(); i++) {
-                System.out.println(removeMe.links.get(i).right.payload);
-                System.out.println(removeMe.links.get(i).left.payload);
-            }
-        }
         if (removeMe.payload.compareTo(root.payload) == 0) {
             // for (int i = removeMe.links.size(); i < height; i++) {
             // removeMe.setLinks(root.links.get(i).left, root.links.get(i).right);
@@ -201,6 +192,9 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             removeMe.setLinksAtIdx(i, null, null);
         }
         size--;
+        // if (contains(object)) {
+        // remove(object);
+        // }
         return true;
     }
 
@@ -289,22 +283,22 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     // TODO
     private void raiseHeight() {
-        SkipListSetPayloadWrapper<T> currentWrapper = root;
-        SkipListSetPayloadWrapper<T> oldWrapper = root;
-        while (currentWrapper.links.get(height - 2).right != null) {
-            // advance to next link
-            currentWrapper = currentWrapper.links.get(height - 2).right;
-            // if value equals 1
-            if (Math.round(Math.random()) == 1) {
-                // set old wrapper right link to point to this wrapper
-                oldWrapper.links.get(height - 1).right = currentWrapper;
-                // add new left link to old wrapper to this wrapper
-                currentWrapper.setLinks(oldWrapper, null);
-                // this is now the new old wrapper
-                oldWrapper = currentWrapper;
-            }
-
-        }
+        // SkipListSetPayloadWrapper<T> currentWrapper = root;
+        // SkipListSetPayloadWrapper<T> oldWrapper = root;
+        // while (currentWrapper.links.get(height - 2).right != null) {
+        // // advance to next link
+        // currentWrapper = currentWrapper.links.get(height - 2).right;
+        // // if value equals 1
+        // if (Math.round(Math.random()) == 1) {
+        // // set old wrapper right link to point to this wrapper
+        // oldWrapper.links.get(height - 1).right = currentWrapper;
+        // // add new left link to old wrapper to this wrapper
+        // currentWrapper.setLinks(oldWrapper, null);
+        // // this is now the new old wrapper
+        // oldWrapper = currentWrapper;
+        // }
+        //
+        // }
         // increase the root height
         root.setLinks(null, null);
         height++;
