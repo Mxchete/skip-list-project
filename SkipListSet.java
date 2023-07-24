@@ -10,7 +10,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     public SkipListSet() {
         root = new SkipListSetPayloadWrapper<T>(null);
-        height = 25;
+        height = 4;
         size = 0;
     }
 
@@ -132,7 +132,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     public SkipListSetIterator<T> iterator() {
-        return new SkipListSetIterator<T>(root);
+        return new SkipListSetIterator<T>();
     }
 
     // TODO
@@ -277,13 +277,14 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     // TODO
     public void reBalance() {
-        // SkipListSet<T> oldSet = this;
-        // root = null;
-        // Iterator<T> i = oldSet.iterator();
-        // while (i.hasNext()) {
-        // add(i.next());
-        // }
-        // oldSet.clear();
+        SkipListSetPayloadWrapper<T> searcher = root;
+        SkipListSet<T> newList = new SkipListSet<T>();
+        while (searcher != null) {
+            newList.add(searcher.payload);
+            searcher = searcher.links.get(0).right;
+        }
+        root = newList.root;
+        System.gc();
     }
 
     // TODO
@@ -330,25 +331,25 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
         int i = height - 1;
         // boolean DEBUG = obj.hashCode() == -2003898889;
-        boolean DEBUG = false;
-        if (add && DEBUG) {
-            System.out.println("hhhhh");
-            System.out.println("hhhhh");
-            System.out.println("hhhhh");
-            System.out.println("hhhhh");
-            System.out.println("hhhhh");
-            System.out.println("addHeight: " + addHeight);
-        }
+        // boolean DEBUG = false;
+        // if (add && DEBUG) {
+        // System.out.println("hhhhh");
+        // System.out.println("hhhhh");
+        // System.out.println("hhhhh");
+        // System.out.println("hhhhh");
+        // System.out.println("hhhhh");
+        // System.out.println("addHeight: " + addHeight);
+        // }
 
         while (true) {
             SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
-            if (DEBUG & add) {
-                System.out.println("lvl: " + i);
-                System.out.println("temp: " + temp.payload);
-                if (right != null) {
-                    System.out.println("r: " + right.payload);
-                }
-            }
+            // if (DEBUG & add) {
+            // System.out.println("lvl: " + i);
+            // System.out.println("temp: " + temp.payload);
+            // if (right != null) {
+            // System.out.println("r: " + right.payload);
+            // }
+            // }
             if (right != null && right.payload.compareTo(obj) <= 0) {
                 temp = right;
                 continue;
@@ -376,29 +377,36 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     // https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html
-    @SuppressWarnings("hiding")
+    @SuppressWarnings("unchecked")
     private class SkipListSetIterator<T extends Comparable<T>> implements Iterator<T> {
 
-        private SkipListSetPayloadWrapper<T> currentItem = null;
+        SkipListSetPayloadWrapper<T> iterItem;
+
+        public SkipListSetIterator() {
+            iterItem = (SkipListSetPayloadWrapper<T>) root;
+        }
 
         public boolean hasNext() {
-            if (currentItem == null)
+            if (iterItem == null)
                 return false;
-            return (currentItem.links.get(0).right == null);
+
+            return true;
         }
 
         public T next() {
-            T previousPayload = currentItem.payload;
-            currentItem = currentItem.links.get(0).right;
-            return previousPayload;
+
+            T returner = (T) iterItem.payload;
+            iterItem = iterItem.links.get(0).right;
+            return returner;
         }
 
-        // TODO
         public void remove() {
-        }
-
-        SkipListSetIterator(SkipListSetPayloadWrapper<T> iterateFrom) {
-            this.currentItem = iterateFrom;
+            if (iterItem.payload == null)
+                return;
+            else {
+                SkipListSet.this.remove((Object) iterItem.payload);
+                iterItem.payload = null;
+            }
         }
 
     }
