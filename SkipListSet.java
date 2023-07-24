@@ -6,7 +6,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     private static int height = -1;
     private static int size = -1;
     private SkipListSetPayloadWrapper<T> root = null;
-    // private int how_many_adds = 0;
 
     public SkipListSet() {
         root = new SkipListSetPayloadWrapper<T>(null);
@@ -14,10 +13,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         size = 0;
     }
 
-    // add done for now
     public boolean add(T object) {
-        // how_many_adds++;
-        // System.out.println(how_many_adds);
         if (root == null || root.payload == null) {
             root = new SkipListSetPayloadWrapper<T>(object);
             for (int i = 0; i < height; i++) {
@@ -30,22 +26,12 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             T oldRoot = root.payload;
             root.payload = object;
             add(oldRoot);
-
-            // SkipListSetPayloadWrapper<T> newRoot = new
-            // SkipListSetPayloadWrapper<T>(object);
-            // for (int i = 0; i < height - 1; i++) {
-            // newRoot.setLinks(null, root);
-            // root.links.get(i).left = newRoot;
-            // }
-            // newRoot.setLinks(null, null);
-            // root.links.remove(root.links.size() - 1);
-            // root = newRoot;
         }
         if (contains(object)) {
             return false;
         }
         int oldSize = size;
-        SkipListSetPayloadWrapper<T> nearestWrapper = search(object, true);
+        search(object, true);
         if (oldSize == size) {
             return false;
         }
@@ -79,10 +65,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return null;
     }
 
-    // TODO
     @SuppressWarnings("unchecked")
     public boolean contains(Object object) {
-        // System.out.println(height);
         if (search((T) object, false).payload.compareTo((T) object) == 0)
             return true;
         return false;
@@ -135,7 +119,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return new SkipListSetIterator<T>();
     }
 
-    // TODO
     public T last() {
         SkipListSetPayloadWrapper<T> current = root;
         int srchHeight = height - 1;
@@ -149,31 +132,12 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return current.payload;
     }
 
-    // TODO
     @SuppressWarnings("unchecked")
     public boolean remove(Object object) {
         SkipListSetPayloadWrapper<T> removeMe = search((T) object, false);
         if (removeMe.payload.compareTo((T) object) != 0)
             return false;
-        // old for loop
-        // for (int i = 0; i < removeMe.links.size(); i++) {
-        // if (removeMe.links.get(i).right != null) {
-        // removeMe.links.get(i).right.links.get(i).left = removeMe.links.get(i).left;
-        // }
-        // if (removeMe.links.get(i).left != null) {
-        // removeMe.links.get(i).left.links.get(i).right = removeMe.links.get(i).right;
-        // }
-        // removeMe.links.get(i).right = null;
-        // removeMe.links.get(i).left = null;
-        // }
-        // boolean DEBUG = object.hashCode() == -2003898889;
         if (removeMe.payload.compareTo(root.payload) == 0) {
-            // for (int i = removeMe.links.size(); i < height; i++) {
-            // removeMe.setLinks(root.links.get(i).left, root.links.get(i).right);
-            // }
-            // root = removeMe;
-            // size--;
-            // return true;
             T save = removeMe.links.get(0).right.payload;
             remove(save);
             removeMe.payload = save;
@@ -192,19 +156,10 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             removeMe.setLinksAtIdx(i, null, null);
         }
         size--;
-        // if (contains(object)) {
-        // remove(object);
-        // }
         return true;
     }
 
     public int print_debug(T object) {
-        // System.out.println(removeMe.payload);
-        // System.out.println(removeMe.links.size());
-        // for (int i = 0; i < removeMe.links.size(); i++) {
-        // System.out.println(removeMe.links.get(i).right.payload);
-        // System.out.println(removeMe.links.get(i).left.payload);
-        // }
         SkipListSetPayloadWrapper<T> temp = root;
         int i = height - 1;
         System.out.println("obj: " + object);
@@ -224,7 +179,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                 System.out.println(temp.links.get(i).right);
                 System.out.println(temp.links.get(i).left);
             }
-            // System.out.println(temp.payload.compareTo((T) object) == 0);
             if (i > 0) {
                 i--;
             } else
@@ -233,7 +187,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return 0;
     }
 
-    // TODO
     public boolean removeAll(Collection<?> objectCollection) {
         boolean returnValue = false;
         for (Object object : objectCollection)
@@ -269,7 +222,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return null;
     }
 
-    // TODO
     public void reBalance() {
         SkipListSetPayloadWrapper<T> searcher = root;
         SkipListSet<T> newList = new SkipListSet<T>();
@@ -281,25 +233,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         System.gc();
     }
 
-    // TODO
     private void raiseHeight() {
-        // SkipListSetPayloadWrapper<T> currentWrapper = root;
-        // SkipListSetPayloadWrapper<T> oldWrapper = root;
-        // while (currentWrapper.links.get(height - 2).right != null) {
-        // // advance to next link
-        // currentWrapper = currentWrapper.links.get(height - 2).right;
-        // // if value equals 1
-        // if (Math.round(Math.random()) == 1) {
-        // // set old wrapper right link to point to this wrapper
-        // oldWrapper.links.get(height - 1).right = currentWrapper;
-        // // add new left link to old wrapper to this wrapper
-        // currentWrapper.setLinks(oldWrapper, null);
-        // // this is now the new old wrapper
-        // oldWrapper = currentWrapper;
-        // }
-        //
-        // }
-        // increase the root height
         root.setLinks(null, null);
         height++;
     }
@@ -309,7 +243,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         while (Math.round(Math.random()) == 1 && randomHeight != height - 1) {
             randomHeight++;
         }
-        // System.out.println("random height: " + randomHeight);
         return randomHeight;
     }
 
@@ -324,26 +257,9 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             size++;
         }
         int i = height - 1;
-        // boolean DEBUG = obj.hashCode() == -2003898889;
-        // boolean DEBUG = false;
-        // if (add && DEBUG) {
-        // System.out.println("hhhhh");
-        // System.out.println("hhhhh");
-        // System.out.println("hhhhh");
-        // System.out.println("hhhhh");
-        // System.out.println("hhhhh");
-        // System.out.println("addHeight: " + addHeight);
-        // }
 
         while (true) {
             SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
-            // if (DEBUG & add) {
-            // System.out.println("lvl: " + i);
-            // System.out.println("temp: " + temp.payload);
-            // if (right != null) {
-            // System.out.println("r: " + right.payload);
-            // }
-            // }
             if (right != null && right.payload.compareTo(obj) <= 0) {
                 temp = right;
                 continue;
