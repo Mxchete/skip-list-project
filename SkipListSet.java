@@ -9,12 +9,12 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     public SkipListSet() {
         root = new SkipListSetPayloadWrapper<T>(null);
-        height = 4;
+        height = 8;
         size = 0;
     }
 
     public boolean add(T object) {
-        if (root == null || root.payload == null) {
+        if (isEmpty()) {
             root = new SkipListSetPayloadWrapper<T>(object);
             for (int i = 0; i < height; i++) {
                 root.setLinks(null, null);
@@ -43,13 +43,11 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     public boolean addAll(Collection<? extends T> objectCollection) {
-        int oldSize = size;
+        boolean returnValue = false;
         for (T object : objectCollection) {
-            add(object);
+            returnValue = returnValue | add(object);
         }
-        if (oldSize != size)
-            return true;
-        return false;
+        return returnValue;
     }
 
     public void clear() {
@@ -60,16 +58,13 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         root = new SkipListSetPayloadWrapper<T>(null);
     }
 
-    // TODO
     public Comparator<T> comparator() {
         return null;
     }
 
     @SuppressWarnings("unchecked")
     public boolean contains(Object object) {
-        if (search((T) object, false).payload.compareTo((T) object) == 0)
-            return true;
-        return false;
+        return search((T) object, false).payload.compareTo((T) object) == 0;
     }
 
     public boolean containsAll(Collection<?> objectCollection) {
@@ -82,20 +77,14 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return returnValue;
     }
 
-    // TODO
     public boolean equals(Collection<T> object) {
-        if (object.size() == size && containsAll(object))
-            return true;
-        return false;
+        return object.size() == size && containsAll(object);
     }
 
     public T first() {
-        if (root != null)
-            return root.payload;
-        return null;
+        return (root != null) ? root.payload : null;
     }
 
-    // TODO
     public int hashCode() {
         Iterator<T> hashIterator = iterator();
         int result = 0;
@@ -110,9 +99,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     public boolean isEmpty() {
-        if (root == null || root.payload == null)
-            return true;
-        return false;
+        return (root == null || root.payload == null);
     }
 
     public SkipListSetIterator<T> iterator() {
@@ -194,9 +181,16 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return false;
     }
 
-    // TODO
     public boolean retainAll(Collection<?> objectCollection) {
-        return false;
+        boolean returnValue = false;
+        Iterator<T> retainIterator = iterator();
+        while (retainIterator.hasNext()) {
+            T retain = retainIterator.next();
+            if (!objectCollection.contains(retain)) {
+                returnValue = returnValue | remove(retain);
+            }
+        }
+        return returnValue;
     }
 
     public int size() {
@@ -211,15 +205,34 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         throw new UnsupportedOperationException();
     }
 
-    // TODO
     public Object[] toArray() {
-        return new Object[0];
+        SkipListSetPayloadWrapper<T> searcher = root;
+        Object[] skipListAsArray = new Object[size];
+        for (int i = 0; i < size; i++) {
+            if (searcher != null) {
+                skipListAsArray[i] = searcher.payload;
+                searcher = searcher.links.get(0).right;
+            }
+        }
+        return skipListAsArray;
     }
 
-    // TODO
-    @SuppressWarnings("hiding")
+    @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] array) {
-        return null;
+        SkipListSetPayloadWrapper<?> searcher = root;
+        if (array.length < size) {
+            array = Arrays.copyOf(array, size);
+        }
+        for (int i = 0; i < size; i++) {
+            if (searcher != null) {
+                array[i] = (T) searcher.payload;
+                searcher = searcher.links.get(0).right;
+            }
+        }
+        if (array.length > size) {
+            array[size] = null;
+        }
+        return array;
     }
 
     public void reBalance() {
@@ -256,12 +269,12 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
             size++;
         }
-        int i = height - 1;
 
-        while (true) {
+        for (int i = height - 1; i >= 0; i--) {
             SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
             if (right != null && right.payload.compareTo(obj) <= 0) {
                 temp = right;
+                i++;
                 continue;
             }
             if (add && i <= addHeight) {
@@ -274,10 +287,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                 }
                 temp.links.get(i).right = itemWrapper;
             }
-            if (i > 0) {
-                i--;
-            } else
-                break;
         }
 
         if (add)
@@ -290,39 +299,34 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     @SuppressWarnings("unchecked")
     private class SkipListSetIterator<T extends Comparable<T>> implements Iterator<T> {
 
-        SkipListSetPayloadWrapper<T> iterItem;
-
-        public SkipListSetIterator() {
-            iterItem = (SkipListSetPayloadWrapper<T>) root;
-        }
+        private SkipListSetPayloadWrapper<T> iterItem;
 
         public boolean hasNext() {
-            if (iterItem == null)
-                return false;
-
-            return true;
+            return iterItem != null;
         }
 
         public T next() {
-
             T returner = (T) iterItem.payload;
             iterItem = iterItem.links.get(0).right;
             return returner;
         }
 
         public void remove() {
-            if (iterItem.payload == null)
+            if (iterItem == null || iterItem.payload == null)
                 return;
             else {
                 SkipListSet.this.remove((Object) iterItem.payload);
-                iterItem.payload = null;
             }
+        }
+
+        private SkipListSetIterator() {
+            iterItem = (SkipListSetPayloadWrapper<T>) root;
         }
 
     }
 
-    @SuppressWarnings("hiding")
     private class SkipListSetPayloadWrapper<T extends Comparable<T>> {
+
         T payload;
         ArrayList<Links> links;
 
