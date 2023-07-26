@@ -89,7 +89,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         Iterator<T> hashIterator = iterator();
         int result = 0;
         while (hashIterator.hasNext()) {
-            result = result + Objects.hash(hashIterator.next());
+            result = result + Objects.hashCode(hashIterator.next());
         }
         return result;
     }
@@ -103,7 +103,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     public SkipListSetIterator<T> iterator() {
-        return new SkipListSetIterator<T>();
+        return new SkipListSetIterator<T>(root);
     }
 
     public T last() {
@@ -296,7 +296,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     // https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html
-    @SuppressWarnings("unchecked")
     private class SkipListSetIterator<T extends Comparable<T>> implements Iterator<T> {
 
         private SkipListSetPayloadWrapper<T> iterItem;
@@ -319,8 +318,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
         }
 
-        private SkipListSetIterator() {
-            iterItem = (SkipListSetPayloadWrapper<T>) root;
+        private SkipListSetIterator(SkipListSetPayloadWrapper<T> first) {
+            iterItem = first;
         }
 
     }
