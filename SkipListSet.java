@@ -3,8 +3,8 @@ import java.util.*;
 // https://docs.oracle.com/javase/8/docs/api/java/util/SortedSet.html
 public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
-    private static int height = -1;
-    private static int size = -1;
+    private int height = -1;
+    private int size = -1;
     private SkipListSetPayloadWrapper<T> root = null;
 
     public SkipListSet() {
@@ -243,6 +243,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             searcher = searcher.links.get(0).right;
         }
         root = newList.root;
+        height = newList.height;
         System.gc();
     }
 
