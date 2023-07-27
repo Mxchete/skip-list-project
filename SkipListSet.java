@@ -404,13 +404,15 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     // ____________________________________________
-    // Function:
-    // Parameters:
-    // Purpose:
-    // Returns:
+    // Function: heightRandomizer
+    // Parameters: none
+    // Purpose: generate a random height for a node in the list
+    // Returns: integer of height
     // Documented Anomolies: none
     private int heightRandomizer() {
         int randomHeight = 0;
+        // height will have a 50% chance to grow one level for each level until height -
+        // 1 is reached
         while (Math.round(Math.random()) == 1 && randomHeight != height - 1) {
             randomHeight++;
         }
@@ -418,13 +420,16 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     // ____________________________________________
-    // Function:
-    // Parameters:
-    // Purpose:
-    // Returns:
+    // Function: search
+    // Parameters: object to search for, boolean value to know if the value is being
+    // added to the list
+    // Purpose: search through the list to find a given object
+    // Returns: wrapper of the object that was found
     // Documented Anomolies: none
     private SkipListSetPayloadWrapper<T> search(T obj, boolean add) {
         SkipListSetPayloadWrapper<T> temp = root;
+        // wrapper for the object is created and links are generated up to a random
+        // height if add is true
         SkipListSetPayloadWrapper<T> itemWrapper = new SkipListSetPayloadWrapper<T>(obj);
         int addHeight = heightRandomizer();
         if (add) {
@@ -434,18 +439,25 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             size++;
         }
 
+        // for loop to iterate through the list vertically, starting at the top
         for (int i = height - 1; i >= 0; i--) {
             SkipListSetPayloadWrapper<T> right = temp.links.get(i).right;
+            // if right exists and is less than or equal to object, move right without
+            // dropping a level
             if (right != null && right.payload.compareTo(obj) <= 0) {
                 temp = right;
                 i++;
                 continue;
             }
+            // if add is true and current height is at or below height to add at
             if (add && i <= addHeight) {
+                // if right exists and equals the object, return the right value
                 if (right != null && right.payload.compareTo(obj) == 0) {
                     return right;
                 }
+                // otherwise set links at this height for the new item to add
                 itemWrapper.setLinksAtIdx(i, temp, right);
+                // update other item wrapper links to point to new item
                 if (right != null) {
                     right.links.get(i).left = itemWrapper;
                 }
@@ -453,6 +465,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
         }
 
+        // return the new item if add is true, otherwise return the item wrapper that
+        // was found
         if (add)
             return itemWrapper;
         else
@@ -467,23 +481,24 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html
     private class SkipListSetIterator<T extends Comparable<T>> implements Iterator<T> {
 
+        // private variable holding current item wrapper of the iterator
         private SkipListSetPayloadWrapper<T> iterItem;
 
         // ____________________________________________
-        // Function:
-        // Parameters:
-        // Purpose:
-        // Returns:
+        // Function: hasNext
+        // Parameters: none
+        // Purpose: check if current iterator value is null
+        // Returns: boolean true iff current iterator value is not null
         // Documented Anomolies: none
         public boolean hasNext() {
             return iterItem != null;
         }
 
         // ____________________________________________
-        // Function:
-        // Parameters:
-        // Purpose:
-        // Returns:
+        // Function: next
+        // Parameters: none
+        // Purpose: advance to next wrapper in set
+        // Returns: current wrapper payload
         // Documented Anomolies: none
         public T next() {
             T returner = (T) iterItem.payload;
@@ -492,12 +507,14 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
 
         // ____________________________________________
-        // Function:
-        // Parameters:
-        // Purpose:
-        // Returns:
+        // Function: remove
+        // Parameters: none
+        // Purpose: remove an item from the list as it iterates through
+        // Returns: nothing
         // Documented Anomolies: none
         public void remove() {
+            // if item does not exist, do nothing, otherwise call SkipListSet remove for
+            // current iterator item
             if (iterItem == null || iterItem.payload == null)
                 return;
             else {
@@ -521,6 +538,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // nodes
     private class SkipListSetPayloadWrapper<T extends Comparable<T>> {
 
+        // private variables to store generic payload & list of links to other wrappers
         T payload;
         ArrayList<Links> links;
 
@@ -534,20 +552,20 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
 
         // ____________________________________________
-        // Function:
-        // Parameters:
-        // Purpose:
-        // Returns:
+        // Function: setLinks
+        // Parameters: left and right item wrappers to add as links
+        // Purpose: add new links to this item wrapper
+        // Returns: nothing
         // Documented Anomolies: none
         private void setLinks(SkipListSetPayloadWrapper<T> left, SkipListSetPayloadWrapper<T> right) {
             links.add(new Links(left, right));
         }
 
         // ____________________________________________
-        // Function:
-        // Parameters:
-        // Purpose:
-        // Returns:
+        // Function: setLinksAtIdx
+        // Parameters: index to add at, left and right item wrappers to add as links
+        // Purpose: add new links at a certain index to this item wrapper
+        // Returns: nothing
         // Documented Anomolies: none
         private void setLinksAtIdx(int index, SkipListSetPayloadWrapper<T> left, SkipListSetPayloadWrapper<T> right) {
             links.set(index, new Links(left, right));
@@ -557,8 +575,10 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         // class: Links
         // purpose: Contain right and left links for skip list nodes
         private class Links {
-            SkipListSetPayloadWrapper<T> left;
-            SkipListSetPayloadWrapper<T> right;
+
+            // private variables to store left and right links
+            private SkipListSetPayloadWrapper<T> left;
+            private SkipListSetPayloadWrapper<T> right;
 
             // ____________________________________________
             // Constructor: Links
