@@ -53,16 +53,17 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             return true;
         }
 
+        // case where object already exists in the set, return false
+        if (contains(object)) {
+            return false;
+        }
+
         // case where a new item should be inserted before the root
         if (root.payload.compareTo(object) >= 0) {
             // save old root value, replace root value with new item, and re-add old root
             T oldRoot = root.payload;
             root.payload = object;
             return add(oldRoot);
-        }
-        // case where object already exists in the set, return false
-        if (contains(object)) {
-            return false;
         }
 
         // if size does not change after adding the object, return false
@@ -123,7 +124,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // Documented Anomolies: none
     @SuppressWarnings("unchecked")
     public boolean contains(Object object) {
-        return search((T) object, false).payload.compareTo((T) object) == 0;
+        return !isEmpty() && search((T) object, false).payload.compareTo((T) object) == 0;
     }
 
     // ____________________________________________
@@ -234,6 +235,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // Documented Anomolies: none
     @SuppressWarnings("unchecked")
     public boolean remove(Object object) {
+        if (isEmpty())
+            return false;
         // run search to find node to remove
         SkipListSetPayloadWrapper<T> removeMe = search((T) object, false);
         // if node was not found that contains the object, return false
@@ -357,16 +360,16 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         if (array.length < size) {
             array = Arrays.copyOf(array, size);
         }
+        // if array was too big, set position at size to null
+        else if (array.length > size) {
+            array = Arrays.copyOf(array, size);
+        }
         // search skip list and add each item to the array
         for (int i = 0; i < size; i++) {
             if (searcher != null) {
                 array[i] = (T) searcher.payload;
                 searcher = searcher.links.get(0).right;
             }
-        }
-        // if array was too big, set position at size to null
-        if (array.length > size) {
-            array[size] = null;
         }
         return array;
     }
