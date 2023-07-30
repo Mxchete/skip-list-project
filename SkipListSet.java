@@ -428,9 +428,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     // added to the list
     // Purpose: search through the list to find a given object
     // Returns: wrapper of the object that was found
-    // Documented Anomolies: one documentated case where arraylist would not check
-    // indexes and try to access a null value from its array without throwing out of
-    // bounds exception
+    // Documented Anomolies: none
     private SkipListSetPayloadWrapper<T> search(T obj, boolean add) {
         SkipListSetPayloadWrapper<T> temp = root;
         // wrapper for the object is created and links are generated up to a random
@@ -506,9 +504,9 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         // Returns: current wrapper payload
         // Documented Anomolies: none
         public T next() {
-            T returner = (T) iterItem.payload;
+            T payload = (T) iterItem.payload;
             iterItem = iterItem.links.get(0).right;
-            return returner;
+            return payload;
         }
 
         // ____________________________________________
@@ -518,11 +516,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         // Returns: nothing
         // Documented Anomolies: none
         public void remove() {
-            // if item does not exist, do nothing, otherwise call SkipListSet remove for
-            // current iterator item
-            if (iterItem == null || iterItem.payload == null)
-                return;
-            else {
+            // if item exists, call SkipListSet remove for current iterator item
+            if (iterItem != null && iterItem.payload != null) {
                 SkipListSet.this.remove((Object) iterItem.payload);
             }
         }
